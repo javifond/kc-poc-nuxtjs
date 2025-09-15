@@ -1,10 +1,14 @@
 [build]
   publish = ".output/public"
-  command = "npm ci && npm run build"
+  command = "rm -rf node_modules package-lock.json && npm install && npm run generate"
 
 [build.environment]
   NODE_VERSION = "20"
-  NPM_FLAGS = "--prefer-offline --no-audit"
+  NPM_FLAGS = "--no-audit --no-fund"
+  NPM_CONFIG_CACHE = "/tmp/.npm"
 
 [context.production]
-  command = "npm ci && npm run generate"
+  command = "rm -rf node_modules package-lock.json && npm install && npm run generate"
+
+[context.deploy-preview]
+  command = "rm -rf node_modules package-lock.json && npm install && npm run generate"
