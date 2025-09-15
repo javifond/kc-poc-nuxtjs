@@ -81,3 +81,7 @@ playwright/.cache/
 CLAUDE.md
 .claude/
 *.claude
+
+# Package manager files
+pnpm-lock.yaml
+yarn.lock
