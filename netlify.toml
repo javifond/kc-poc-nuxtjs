@@ -1,14 +1,16 @@
 [build]
   publish = ".output/public"
-  command = "rm -rf node_modules package-lock.json && npm install && npm run generate"
+  command = "rm -rf node_modules package-lock.json && npm install --ignore-scripts && npx nuxt prepare && npm run generate"
 
 [build.environment]
   NODE_VERSION = "20"
   NPM_FLAGS = "--no-audit --no-fund"
   NPM_CONFIG_CACHE = "/tmp/.npm"
+  NUXT_TELEMETRY_DISABLED = "1"
+  CI = "true"
 
 [context.production]
-  command = "rm -rf node_modules package-lock.json && npm install && npm run generate"
+  command = "rm -rf node_modules package-lock.json && npm install --ignore-scripts && npx nuxt prepare && npm run generate"
 
 [context.deploy-preview]
-  command = "rm -rf node_modules package-lock.json && npm install && npm run generate"
+  command = "rm -rf node_modules package-lock.json && npm install --ignore-scripts && npx nuxt prepare && npm run generate"

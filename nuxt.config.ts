@@ -14,5 +14,18 @@ export default defineNuxtConfig({
   },
   experimental: {
     payloadExtraction: false
+  },
+  build: {
+    transpile: []
+  },
+  vite: {
+    build: {
+      rollupOptions: {
+        external: ['oxc-parser']
+      }
+    },
+    optimizeDeps: {
+      exclude: ['oxc-parser']
+    }
   }
 })
