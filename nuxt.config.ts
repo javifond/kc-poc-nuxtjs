@@ -3,7 +3,7 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.scss'],
   ssr: false,
   nitro: {
-    preset: 'static'
+    preset: 'netlify',
   },
   app: {
     head: {

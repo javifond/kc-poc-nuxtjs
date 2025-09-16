@@ -14,3 +14,24 @@
 
 [context.deploy-preview]
   command = "rm -rf node_modules package-lock.json && npm install --ignore-scripts && npx nuxt prepare && npm run generate"
+
+[[edge_functions]]
+  function = "auth-proxy"
+  path = "/auth/*"
+
+[[edge_functions]]
+  function = "realms-proxy"  
+  path = "/realms/*"
+
+# Assets can use simple redirect (no headers needed)
+[[redirects]]
+  from = "/assets/*"
+  to = "https://kc-njs.netlify.app/assets/:splat"
+  status = 200
+  force = true
+
+# SPA fallback - must be last
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
