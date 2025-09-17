@@ -14,38 +14,10 @@ export const useAuth = () => {
 
   let userManager: UserManager
 
-  // OIDC Configuration
-  const oidcConfig = {
-    authority: `${AUTH_ENDPOINT}realms/${KEYCLOAK_REALM}`,
-    client_id: KEYCLOAK_CLIENT_ID,
-    redirect_uri: window.location.origin,
-    scope: `openid ${TENANT_ID}`,
-    userStore: new WebStorageStateStore({ store: window.localStorage }),
-    automaticSilentRenew: false,
-    accessTokenExpiringNotificationTimeInSeconds: 30,
-  }
-
-  // Initialize UserManager
-  const initUserManager = () => {
-    if (!userManager) {
-      userManager = new UserManager(oidcConfig)
-
-      // Handle user loaded events
-      userManager.events.addUserLoaded((loadedUser) => {
-        user.value = loadedUser
-        cleanUpUrl()
-      })
-
-      // Handle user unloaded events
-      userManager.events.addUserUnloaded(() => {
-        user.value = null
-      })
-
-      // Handle silent renew errors
-      userManager.events.addSilentRenewError((error) => {
-        console.error('Silent renew error:', error)
-      })
-    }
+  // Calculate redirect URI like React implementation
+  const getRedirectUri = () => {
+    const { protocol, hostname, port, pathname } = window.location
+    return `${protocol}//${hostname}${port ? `:${port}` : ''}${pathname}`
   }
 
   // Clean up URL parameters after authentication
@@ -61,6 +33,42 @@ export const useAuth = () => {
     window.history.replaceState({}, '', newUrl)
   }
 
+  // OIDC Configuration with integrated callback handling
+  const oidcConfig = computed(() => ({
+    authority: `${AUTH_ENDPOINT}realms/${KEYCLOAK_REALM}`,
+    client_id: KEYCLOAK_CLIENT_ID,
+    redirect_uri: getRedirectUri(),
+    scope: `openid ${TENANT_ID}`,
+    userStore: new WebStorageStateStore({ store: window.localStorage }),
+    onSigninCallback: () => {
+      cleanUpUrl()
+    },
+    automaticSilentRenew: false,
+    accessTokenExpiringNotificationTimeInSeconds: 30,
+  }))
+
+  // Initialize UserManager
+  const initUserManager = () => {
+    if (!userManager) {
+      userManager = new UserManager(oidcConfig.value)
+
+      // Handle user loaded events
+      userManager.events.addUserLoaded((loadedUser) => {
+        user.value = loadedUser
+      })
+
+      // Handle user unloaded events
+      userManager.events.addUserUnloaded(() => {
+        user.value = null
+      })
+
+      // Handle silent renew errors
+      userManager.events.addSilentRenewError((error) => {
+        console.error('Silent renew error:', error)
+      })
+    }
+  }
+
   // Login function
   const login = async () => {
     try {
@@ -71,9 +79,7 @@ export const useAuth = () => {
         initUserManager()
       }
 
-      await userManager.signinRedirect({
-        redirect_uri: window.location.origin,
-      })
+      await userManager.signinRedirect()
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Login failed'
       console.error('Login error:', err)
@@ -90,7 +96,7 @@ export const useAuth = () => {
 
       if (userManager) {
         await userManager.signoutRedirect({
-          post_logout_redirect_uri: window.location.origin,
+          post_logout_redirect_uri: getRedirectUri(),
         })
       }
     } catch (err) {
@@ -115,20 +121,6 @@ export const useAuth = () => {
     }
   }
 
-  // Handle authentication callback
-  const handleCallback = async () => {
-    if (!userManager) return
-
-    try {
-      const callbackUser = await userManager.signinRedirectCallback()
-      user.value = callbackUser
-      cleanUpUrl()
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Callback handling failed'
-      console.error('Callback error:', err)
-    }
-  }
-
   // Initialize on mount
   onMounted(() => {
     initUserManager()
@@ -136,7 +128,13 @@ export const useAuth = () => {
     // Check if this is a callback from authentication
     const urlParams = new URLSearchParams(window.location.search)
     if (urlParams.has('code') && urlParams.has('state')) {
-      handleCallback()
+      // Let OIDC client handle the callback via onSigninCallback
+      userManager.signinRedirectCallback().then((callbackUser) => {
+        user.value = callbackUser
+      }).catch((err) => {
+        error.value = err instanceof Error ? err.message : 'Callback handling failed'
+        console.error('Callback error:', err)
+      })
     } else {
       checkAuth()
     }
