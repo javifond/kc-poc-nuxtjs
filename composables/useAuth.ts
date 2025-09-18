@@ -79,7 +79,29 @@ export const useAuth = () => {
         initUserManager()
       }
 
-      await userManager.signinRedirect()
+      // Force external navigation to bypass SPA router
+      // Store the current location before redirect
+      const currentUrl = window.location.href
+
+      // Use the standard signinRedirect but force external navigation
+      await userManager.signinRedirect({
+        redirect_uri: getRedirectUri()
+      })
+
+      // If we're still here, force navigation (fallback)
+      if (window.location.href === currentUrl) {
+        const settings = userManager.settings
+        const authUrl = `${settings.authority}/protocol/openid-connect/auth?` +
+          new URLSearchParams({
+            client_id: settings.client_id,
+            redirect_uri: getRedirectUri(),
+            response_type: 'code',
+            scope: settings.scope || 'openid',
+            state: Math.random().toString(36).substring(2, 15)
+          }).toString()
+
+        window.location.replace(authUrl)
+      }
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Login failed'
       console.error('Login error:', err)
