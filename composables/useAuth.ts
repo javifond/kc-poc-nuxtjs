@@ -14,6 +14,7 @@ export const useAuth = () => {
 
   let userManager: UserManager
 
+
   // Calculate redirect URI like React implementation
   const getRedirectUri = () => {
     const { protocol, hostname, port, pathname } = window.location
@@ -79,29 +80,19 @@ export const useAuth = () => {
         initUserManager()
       }
 
-      // Force external navigation to bypass SPA router
-      // Store the current location before redirect
-      const currentUrl = window.location.href
+      // Build the authorization URL manually with proper OIDC parameters
+      const authUrl = `${oidcConfig.value.authority}/protocol/openid-connect/auth?` +
+        new URLSearchParams({
+          client_id: oidcConfig.value.client_id,
+          redirect_uri: getRedirectUri(),
+          response_type: 'code',
+          scope: oidcConfig.value.scope,
+          state: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+        }).toString()
 
-      // Use the standard signinRedirect but force external navigation
-      await userManager.signinRedirect({
-        redirect_uri: getRedirectUri()
-      })
-
-      // If we're still here, force navigation (fallback)
-      if (window.location.href === currentUrl) {
-        const settings = userManager.settings
-        const authUrl = `${settings.authority}/protocol/openid-connect/auth?` +
-          new URLSearchParams({
-            client_id: settings.client_id,
-            redirect_uri: getRedirectUri(),
-            response_type: 'code',
-            scope: settings.scope || 'openid',
-            state: Math.random().toString(36).substring(2, 15)
-          }).toString()
-
-        window.location.replace(authUrl)
-      }
+      // Use Nuxt's external navigation to bypass SPA router with context restoration
+      const nuxtApp = useNuxtApp()
+      await nuxtApp.runWithContext(() => navigateTo(authUrl, { external: true }))
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Login failed'
       console.error('Login error:', err)
