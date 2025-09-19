@@ -23,7 +23,7 @@
       <p class="mb-6">Ensure you have the necessary permissions to access the Keycloak features.</p>
       
       <h3 class="section-title">Click the button below to login</h3>
-      <button @click="() => login('keycloak')" class="btn btn-primary">
+      <button @click="login" class="btn btn-primary">
         Login
       </button>
     </div>
@@ -31,10 +31,7 @@
 </template>
 
 <script setup lang="ts">
-const { loggedIn, user, login, logout } = useOidcAuth()
-
-// Map to match the current template expectations
-const isAuthenticated = loggedIn
+const { isAuthenticated, user, login, logout } = useAuth()
 </script>
 
 <style scoped>
