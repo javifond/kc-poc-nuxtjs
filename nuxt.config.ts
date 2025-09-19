@@ -38,6 +38,9 @@ export default defineNuxtConfig({
         clientSecret: '', // Not needed for public client
         redirectUri: '/auth/callback'
       }
+    },
+    middleware: {
+      globalMiddlewareEnabled: false // Disable automatic redirects
     }
   }
 })
