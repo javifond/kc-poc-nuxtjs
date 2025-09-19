@@ -1,4 +1,5 @@
 export default defineNuxtConfig({
+  modules: ['nuxt-oidc-auth'],
   devtools: { enabled: true },
   css: ['~/assets/css/main.scss'],
   ssr: false,
@@ -26,6 +27,17 @@ export default defineNuxtConfig({
     },
     optimizeDeps: {
       exclude: ['oxc-parser']
+    }
+  },
+  oidc: {
+    defaultProvider: 'keycloak',
+    providers: {
+      keycloak: {
+        baseUrl: 'https://kc-njs.netlify.app/auth/realms/demo1',
+        clientId: 'web-demo1',
+        clientSecret: '', // Not needed for public client
+        redirectUri: '/auth/callback'
+      }
     }
   }
 })
