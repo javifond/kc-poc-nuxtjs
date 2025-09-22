@@ -79,17 +79,31 @@ export const useAuth = () => {
         initUserManager()
       }
 
-      // Create the signin request to get the URL parameters
-      const signinRequest = await userManager.createSigninRequest({})
+      // Build the OIDC authorization URL manually since createSigninRequest is causing issues
+      const state = Math.random().toString(36).substring(2, 15) +
+                   Math.random().toString(36).substring(2, 15)
+      const nonce = Math.random().toString(36).substring(2, 15) +
+                   Math.random().toString(36).substring(2, 15)
 
-      // Extract the path and query from the OIDC URL to route through our router
-      const url = new URL(signinRequest.url)
-      const localPath = url.pathname + url.search
+      // Store state and nonce for later validation
+      sessionStorage.setItem('oidc_state', state)
+      sessionStorage.setItem('oidc_nonce', nonce)
 
-      console.log('Routing through Nuxt router to trigger external redirect:', localPath)
+      const authParams = new URLSearchParams({
+        client_id: KEYCLOAK_CLIENT_ID,
+        redirect_uri: getRedirectUri(),
+        response_type: 'code',
+        scope: `openid ${TENANT_ID}`,
+        state: state,
+        nonce: nonce
+      })
+
+      const authPath = `/auth/realms/${KEYCLOAK_REALM}/protocol/openid-connect/auth?${authParams.toString()}`
+
+      console.log('Routing through Nuxt router to trigger external redirect:', authPath)
 
       // Navigate to the local path which will trigger our router beforeEnter guard
-      await navigateTo(localPath)
+      await navigateTo(authPath)
 
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Login failed'
