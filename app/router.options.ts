@@ -12,7 +12,7 @@ export default <RouterConfig>{
       component: () => null, // Dummy component since we redirect before rendering
       beforeEnter(to) {
         // Reconstruct the full external URL
-        const baseUrl = 'https://casino-citizen.eks-dev01.gigndvr.com'
+        const baseUrl = 'https://kc-njs.netlify.app'
         const fullUrl = baseUrl + to.fullPath
 
         console.log('Router intercepted OIDC URL, redirecting externally:', fullUrl)
@@ -32,7 +32,7 @@ export default <RouterConfig>{
       beforeEnter(to) {
         // Check if this looks like a Keycloak URL pattern
         if (to.path.includes('/realms/') && to.path.includes('/protocol/openid-connect/')) {
-          const baseUrl = 'https://casino-citizen.eks-dev01.gigndvr.com'
+          const baseUrl = 'https://kc-njs.netlify.app'
           const fullUrl = baseUrl + to.fullPath
 
           console.log('Router intercepted auth URL, redirecting externally:', fullUrl)
