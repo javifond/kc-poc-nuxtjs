@@ -69,7 +69,7 @@ export const useAuth = () => {
     }
   }
 
-  // Login function
+  // Login function - route through our router to trigger external redirect
   const login = async () => {
     try {
       isLoading.value = true
@@ -79,7 +79,18 @@ export const useAuth = () => {
         initUserManager()
       }
 
-      await userManager.signinRedirect()
+      // Create the signin request to get the URL parameters
+      const signinRequest = await userManager.createSigninRequest({})
+
+      // Extract the path and query from the OIDC URL to route through our router
+      const url = new URL(signinRequest.url)
+      const localPath = url.pathname + url.search
+
+      console.log('Routing through Nuxt router to trigger external redirect:', localPath)
+
+      // Navigate to the local path which will trigger our router beforeEnter guard
+      await navigateTo(localPath)
+
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Login failed'
       console.error('Login error:', err)
