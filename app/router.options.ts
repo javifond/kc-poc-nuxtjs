@@ -4,6 +4,7 @@ import type { RouteRecordRaw } from 'vue-router'
 // Router configuration to handle external OIDC redirects
 export default <RouterConfig>{
   routes: (_routes): RouteRecordRaw[] => [
+    ..._routes, // Keep all existing routes
     // Catch any route that looks like a Keycloak OIDC URL and redirect externally
     {
       name: 'oidc-external-redirect',
