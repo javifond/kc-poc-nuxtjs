@@ -87,8 +87,8 @@ export const useAuth = () => {
 
       console.log('OIDC signin request created, redirecting to:', signinRequest.url)
 
-      // Direct redirect bypassing Nuxt router to avoid interception
-      window.location.href = signinRequest.url
+      // Force external redirect bypassing Nuxt router completely
+      window.location.replace(signinRequest.url)
 
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Login failed'
