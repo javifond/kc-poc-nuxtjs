@@ -87,13 +87,8 @@ export const useAuth = () => {
 
       console.log('OIDC signin request created, redirecting to:', signinRequest.url)
 
-      // Force external redirect using DOM anchor element to bypass router completely
-      const anchor = document.createElement('a')
-      anchor.href = signinRequest.url
-      anchor.target = '_self'
-      document.body.appendChild(anchor)
-      anchor.click()
-      document.body.removeChild(anchor)
+      // Use Nuxt's navigateTo with external: true for proper external redirect
+      await navigateTo(signinRequest.url, { external: true })
 
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Login failed'
