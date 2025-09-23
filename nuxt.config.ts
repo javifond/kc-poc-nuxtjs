@@ -4,7 +4,15 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.scss'],
   ssr: false,
   nitro: {
-    preset: 'netlify-static'
+    preset: 'netlify-static',
+    routeRules: {
+      '/auth/**': {
+        redirect: {
+          to: 'https://kc-njs.netlify.app/auth/**',
+          statusCode: 302
+        }
+      }
+    }
   },
   app: {
     head: {
