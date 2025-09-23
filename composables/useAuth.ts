@@ -1,4 +1,4 @@
-import { UserManager, User, WebStorageStateStore } from 'oidc-client-ts'
+import { UserManager, User, WebStorageStateStore, OidcClient } from 'oidc-client-ts'
 import { ref, computed, onMounted, readonly } from 'vue'
 
 const AUTH_ENDPOINT = 'https://casino-citizen.eks-dev01.gigndvr.com/auth/'
@@ -69,7 +69,7 @@ export const useAuth = () => {
     }
   }
 
-  // Login function - route through our router to trigger external redirect
+  // Login function - use OidcClient createSigninRequest and direct redirect
   const login = async () => {
     try {
       isLoading.value = true
@@ -79,36 +79,20 @@ export const useAuth = () => {
         initUserManager()
       }
 
-      // Build the OIDC authorization URL manually since createSigninRequest is causing issues
-      const state = Math.random().toString(36).substring(2, 15) +
-                   Math.random().toString(36).substring(2, 15)
-      const nonce = Math.random().toString(36).substring(2, 15) +
-                   Math.random().toString(36).substring(2, 15)
+      // Create OidcClient instance with same config to access createSigninRequest
+      const oidcClient = new OidcClient(oidcConfig.value)
 
-      // Store state and nonce for later validation
-      sessionStorage.setItem('oidc_state', state)
-      sessionStorage.setItem('oidc_nonce', nonce)
+      // Use OIDC client's proper createSigninRequest method
+      const signinRequest = await oidcClient.createSigninRequest({})
 
-      const authParams = new URLSearchParams({
-        client_id: KEYCLOAK_CLIENT_ID,
-        redirect_uri: getRedirectUri(),
-        response_type: 'code',
-        scope: `openid ${TENANT_ID}`,
-        state: state,
-        nonce: nonce
-      })
+      console.log('OIDC signin request created, redirecting to:', signinRequest.url)
 
-      const authPath = `/auth/realms/${KEYCLOAK_REALM}/protocol/openid-connect/auth?${authParams.toString()}`
-
-      console.log('Routing through Nuxt router to trigger external redirect:', authPath)
-
-      // Navigate to the local path which will trigger our router beforeEnter guard
-      await navigateTo(authPath)
+      // Direct redirect bypassing Nuxt router to avoid interception
+      window.location.href = signinRequest.url
 
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Login failed'
       console.error('Login error:', err)
-    } finally {
       isLoading.value = false
     }
   }
