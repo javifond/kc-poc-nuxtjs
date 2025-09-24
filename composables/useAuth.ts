@@ -1,7 +1,8 @@
+import { navigateTo } from 'nuxt/app'
 import { UserManager, User, WebStorageStateStore, OidcClient } from 'oidc-client-ts'
 import { ref, computed, onMounted, readonly } from 'vue'
 
-const AUTH_ENDPOINT = 'https://casino-citizen.eks-dev01.gigndvr.com/auth/'
+const AUTH_ENDPOINT = 'https://kc-njs.netlify.app/auth/'
 const KEYCLOAK_REALM = 'demo1'
 const KEYCLOAK_CLIENT_ID = 'web-demo1'
 const TENANT_ID = 'demo1'
@@ -85,10 +86,10 @@ export const useAuth = () => {
       // Use OIDC client's proper createSigninRequest method
       const signinRequest = await oidcClient.createSigninRequest({})
 
-      console.log('OIDC signin request created, redirecting to:', signinRequest.url)
+      // console.log('OIDC signin request created, redirecting to:', signinRequest.url)
 
-      // Use Nuxt's navigateTo with external: true for proper external redirect
-      await navigateTo(signinRequest.url, { external: true })
+      // // Use Nuxt's navigateTo with external: true for proper external redirect
+      // await navigateTo(signinRequest.url, { external: true })
 
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Login failed'

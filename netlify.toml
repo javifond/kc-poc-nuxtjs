@@ -15,18 +15,23 @@
 [context.deploy-preview]
   command = "rm -rf node_modules package-lock.json && npm install --ignore-scripts && npx nuxt prepare && npm run generate"
 
-[[edge_functions]]
-  function = "auth-proxy"
-  path = "/auth/*"
+# Keycloak reverse proxy redirects (matching Vercel pattern)
+[[redirects]]
+  from = "/auth/*"
+  to = "https://casino-citizen.eks-dev01.gigndvr.com/auth/:splat"
+  status = 200
+  force = true
 
-[[edge_functions]]
-  function = "realms-proxy"  
-  path = "/realms/*"
+[[redirects]]
+  from = "/realms/*"
+  to = "https://casino-citizen.eks-dev01.gigndvr.com/realms/:splat"
+  status = 200
+  force = true
 
-# Assets can use simple redirect (no headers needed)
+# Assets redirect
 [[redirects]]
   from = "/assets/*"
-  to = "https://kc-njs.netlify.app/assets/:splat"
+  to = "https://casino-citizen.eks-dev01.gigndvr.com/assets/:splat"
   status = 200
   force = true
 
