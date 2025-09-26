@@ -18,7 +18,7 @@
 # Proxy auth paths to Keycloak server (equivalent to Vercel rewrites)
 [[redirects]]
   from = "/auth/*"
-  to = "https://casino-citizen.eks-dev01.gigndvr.com/auth/:splat"
+  to = "https://casino-citizen.eks-dev01.gigndvr.com/:splat"
   status = 200
   force = true
   headers = {X-Forwarded-Host = ":host"}
