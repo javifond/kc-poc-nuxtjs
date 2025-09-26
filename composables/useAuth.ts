@@ -1,16 +1,7 @@
 import { UserManager, User, WebStorageStateStore, OidcClient } from 'oidc-client-ts'
 import { ref, computed, onMounted, readonly } from 'vue'
 
-// Environment-aware auth endpoint for Netlify redirects
-const getAuthEndpoint = () => {
-  if (process.client) {
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    return isLocal 
-      ? 'https://casino-citizen.eks-dev01.gigndvr.com/'  // Direct for local
-      : `${window.location.origin}/`  // Proxy for production
-  }
-  return 'https://kc-njs.netlify.app/'  // Fallback
-}
+const AUTH_ENDPOINT = 'https://casino-citizen.eks-dev01.gigndvr.com/auth'
 const KEYCLOAK_REALM = 'demo1'
 const KEYCLOAK_CLIENT_ID = 'web-demo1'
 const TENANT_ID = 'demo1'
@@ -44,7 +35,7 @@ export const useAuth = () => {
 
   // OIDC Configuration with integrated callback handling
   const oidcConfig = computed(() => ({
-    authority: `${getAuthEndpoint()}auth/realms/${KEYCLOAK_REALM}`,
+    authority: `${AUTH_ENDPOINT}/realms/${KEYCLOAK_REALM}`,
     client_id: KEYCLOAK_CLIENT_ID,
     redirect_uri: getRedirectUri(),
     scope: `openid ${TENANT_ID}`,

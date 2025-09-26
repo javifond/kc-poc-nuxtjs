@@ -31,8 +31,16 @@
   status = 200
   force = true
 
-# SPA fallback - must be last
+# Serve static HTML files directly (bypass SPA)
+[[redirects]]
+  from = "/auth-redirect.html"
+  to = "/auth-redirect.html"
+  status = 200
+  force = true
+
+# SPA fallback - must be last, exclude static files
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+  conditions = {path = "!/auth-redirect.html,!/auth/*,!/realms/*,!/assets/*"}
