@@ -97,9 +97,6 @@ export const useAuth = () => {
       // window.location.href = signinRequest.url
       // window.history.replaceState({}, '', signinRequest.url)
       window.location.href = signinRequest.url
-
-
-
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Login failed'
       console.error('Login error:', err)
