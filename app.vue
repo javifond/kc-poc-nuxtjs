@@ -21,23 +21,7 @@ const isKeycloakMode = ref(false)
 
 onMounted(() => {
   const keycloakDebugMode = false // Set to true for local theme development
-  
-  // Check if we're in Keycloak theme mode
-  const hasKcContext = (window as any).kcContext !== undefined
-  
-  // Also check if the URL suggests we're serving a Keycloak page
-  const isKeycloakUrl = window.location.pathname.includes('/auth/realms/') && 
-                       (window.location.pathname.includes('/protocol/openid-connect/') ||
-                        window.location.pathname.includes('/login-actions/'))
-  
-  isKeycloakMode.value = hasKcContext || keycloakDebugMode || isKeycloakUrl
-  
-  console.log('Keycloak mode detection:', {
-    hasKcContext,
-    isKeycloakUrl,
-    pathname: window.location.pathname,
-    isKeycloakMode: isKeycloakMode.value
-  })
+  isKeycloakMode.value = (window as any).kcContext !== undefined || keycloakDebugMode
 })
 </script>
 

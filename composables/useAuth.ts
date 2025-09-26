@@ -1,8 +1,16 @@
-import { navigateTo } from 'nuxt/app'
 import { UserManager, User, WebStorageStateStore, OidcClient } from 'oidc-client-ts'
 import { ref, computed, onMounted, readonly } from 'vue'
 
-const AUTH_ENDPOINT = 'https://casino-citizen.eks-dev01.gigndvr.com/auth/'
+// Environment-aware auth endpoint for Netlify redirects
+const getAuthEndpoint = () => {
+  if (process.client) {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    return isLocal 
+      ? 'https://casino-citizen.eks-dev01.gigndvr.com/'  // Direct for local
+      : `${window.location.origin}/`  // Proxy for production
+  }
+  return 'https://kc-njs.netlify.app/'  // Fallback
+}
 const KEYCLOAK_REALM = 'demo1'
 const KEYCLOAK_CLIENT_ID = 'web-demo1'
 const TENANT_ID = 'demo1'
@@ -22,7 +30,7 @@ export const useAuth = () => {
   }
 
   // Clean up URL parameters after authentication
-  const cleanUpUrl = () => {
+  const onSigninCallback = () => {
     const url = new URL(window.location.href)
     const params = new URLSearchParams(url.search)
 
@@ -36,14 +44,12 @@ export const useAuth = () => {
 
   // OIDC Configuration with integrated callback handling
   const oidcConfig = computed(() => ({
-    authority: `${AUTH_ENDPOINT}realms/${KEYCLOAK_REALM}`,
+    authority: `${getAuthEndpoint()}auth/realms/${KEYCLOAK_REALM}`,
     client_id: KEYCLOAK_CLIENT_ID,
     redirect_uri: getRedirectUri(),
     scope: `openid ${TENANT_ID}`,
     userStore: new WebStorageStateStore({ store: window.localStorage }),
-    onSigninCallback: () => {
-      cleanUpUrl()
-    },
+    onSigninCallback,
     automaticSilentRenew: false,
     accessTokenExpiringNotificationTimeInSeconds: 30,
   }))
@@ -85,11 +91,14 @@ export const useAuth = () => {
 
       // Use OIDC client's proper createSigninRequest method
       const signinRequest = await oidcClient.createSigninRequest({})
-      window.location.href = signinRequest.url
       console.log('OIDC signin request created, redirecting to:', signinRequest.url)
 
-      // // Use Nuxt's navigateTo with external: true for proper external redirect
-      // await navigateTo(signinRequest.url, { external: true })
+      // Use static HTML page to bypass Nuxt routing completely
+      // window.location.href = signinRequest.url
+      // window.history.replaceState({}, '', signinRequest.url)
+      window.location.href = signinRequest.url
+
+
 
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Login failed'
