@@ -14,36 +14,18 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, computed } from 'vue'
-import { useKeycloakMode } from './composables/useKeycloakMode'
-import { useRoute } from 'vue-router'
+import { onMounted, ref } from 'vue'
 
 // Use shared Keycloak mode state
-const { isKeycloakMode: sharedKeycloakMode } = useKeycloakMode()
-const route = useRoute()
-
-// Check if current route is a Keycloak auth route
-const isKeycloakRoute = computed(() => {
-  const path = route.path
-  return path.includes('/auth/realms/') || path.includes('/realms/')
-})
-
-// Combined Keycloak mode detection
-const isKeycloakMode = computed(() => {
-  return sharedKeycloakMode.value || isKeycloakRoute.value
-})
+const isKeycloakMode = ref(false)
 
 onMounted(() => {
   const keycloakDebugMode = false // Set to true for local theme development
   
   // Check for existing kcContext on mount
   if ((window as any).kcContext !== undefined || keycloakDebugMode) {
-    sharedKeycloakMode.value = true
+    isKeycloakMode.value = true
   }
-  
-  console.log('App mounted - isKeycloakMode:', isKeycloakMode.value)
-  console.log('Current route:', route.path)
-  console.log('Is Keycloak route:', isKeycloakRoute.value)
 })
 </script>
 

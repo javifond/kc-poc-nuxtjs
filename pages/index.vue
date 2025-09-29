@@ -32,9 +32,7 @@
 
 <script setup lang="ts">
 import { useAuth } from '../composables/useAuth';
-// import { useKeycloak } from '../composables/useKeycloak';
 
-// const { isAuthenticated, user, login, logout } = useKeycloak()
 const { isAuthenticated, user, login, logout } = useAuth()
 </script>
 

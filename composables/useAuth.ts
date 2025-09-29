@@ -1,6 +1,5 @@
 import { UserManager, User, WebStorageStateStore, OidcClient } from 'oidc-client-ts'
 import { ref, computed, onMounted, readonly } from 'vue'
-import { enableKeycloakMode, disableKeycloakMode } from './useKeycloakMode'
 
 const AUTH_ENDPOINT = 'https://casino-citizen.eks-dev01.gigndvr.com/auth/'
 const KEYCLOAK_REALM = 'demo1'
