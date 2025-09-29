@@ -14,14 +14,50 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, watchEffect } from 'vue'
 
 // Detect if we're in Keycloak theme mode (client-side only)
-const isKeycloakMode = ref(false)
+const kcContextExists = ref(false)
+const keycloakDebugMode = false // Set to true for local theme development
+
+// Make it reactive by checking kcContext periodically
+const isKeycloakMode = computed(() => kcContextExists.value || keycloakDebugMode)
 
 onMounted(() => {
-  const keycloakDebugMode = false // Set to true for local theme development
-  isKeycloakMode.value = (window as any).kcContext !== undefined || keycloakDebugMode
+  // Initial check
+  kcContextExists.value = (window as any).kcContext !== undefined
+  console.log('Initial kcContext check:', kcContextExists.value, (window as any).kcContext)
+  
+  // Set up a watcher to detect when kcContext becomes available
+  const checkKcContext = () => {
+    const hasKcContext = (window as any).kcContext !== undefined
+    if (hasKcContext !== kcContextExists.value) {
+      console.log('kcContext changed:', hasKcContext, (window as any).kcContext)
+      kcContextExists.value = hasKcContext
+    }
+  }
+  
+  // Check every 100ms for kcContext changes (in case it's set asynchronously)
+  const interval = setInterval(checkKcContext, 100)
+  
+  // Clean up interval after 5 seconds (should be enough time for kcContext to be set)
+  setTimeout(() => {
+    clearInterval(interval)
+    console.log('Stopped checking for kcContext changes')
+  }, 5000)
+  
+  // Also check on window events that might indicate kcContext is ready
+  const handleWindowLoad = () => {
+    checkKcContext()
+  }
+  
+  window.addEventListener('load', handleWindowLoad)
+  
+  // Cleanup
+  return () => {
+    clearInterval(interval)
+    window.removeEventListener('load', handleWindowLoad)
+  }
 })
 </script>
 

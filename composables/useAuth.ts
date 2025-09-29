@@ -32,9 +32,9 @@ export const useAuth = () => {
 
     const newUrl = `${url.pathname}${params.toString() ? '?' + params.toString() : ''}`
 
-    console.log('Redirecting to:', newUrl)
+    console.log('Cleaning URL to:', newUrl)
 
-    window.location.href = newUrl
+    window.history.replaceState({}, '', newUrl)
   }
 
   // OIDC Configuration with integrated callback handling
@@ -47,6 +47,8 @@ export const useAuth = () => {
     onSigninCallback,
     automaticSilentRenew: false,
     accessTokenExpiringNotificationTimeInSeconds: 30,
+    response_type: "code",
+    loadUserInfo: true,
   }))
 
   // Initialize UserManager
