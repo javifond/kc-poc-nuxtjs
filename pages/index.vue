@@ -3,7 +3,7 @@
     <div v-if="isAuthenticated" class="text-center">
       <h1 class="title">Welcome!</h1>
       <p class="subtitle">
-        <strong>{{ user?.firstName || user?.lastName || user?.email }}</strong>, you are logged in! 🚀
+        <strong>{{ user?.profile?.firstName || user?.profile?.lastName || user?.profile.name || user?.profile?.email }}</strong>, you are logged in! 🚀
       </p>
       <button @click="logout" class="btn btn-danger">
         Logout
@@ -31,11 +31,11 @@
 </template>
 
 <script setup lang="ts">
-// import { useAuth } from '../composables/useAuth';
-import { useKeycloak } from '../composables/useKeycloak';
+import { useAuth } from '../composables/useAuth';
+// import { useKeycloak } from '../composables/useKeycloak';
 
-const { isAuthenticated, user, login, logout } = useKeycloak()
-// const { isAuthenticated, user, login, logout } = useAuth()
+// const { isAuthenticated, user, login, logout } = useKeycloak()
+const { isAuthenticated, user, login, logout } = useAuth()
 </script>
 
 <style scoped>
