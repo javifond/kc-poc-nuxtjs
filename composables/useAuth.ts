@@ -17,6 +17,7 @@ export const useAuth = () => {
   // Calculate redirect URI like React implementation
   const getRedirectUri = () => {
     const { protocol, hostname, port, pathname } = window.location
+    console.log('Redirect URI:', `${protocol}//${hostname}${port ? `:${port}` : ''}${pathname}`)
     return `${protocol}//${hostname}${port ? `:${port}` : ''}${pathname}`
   }
 
