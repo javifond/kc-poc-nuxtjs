@@ -24,23 +24,14 @@
   path = "/realms/*"
 
 # Assets can use simple redirect (no headers needed)
-# Assets redirect (if needed)
 [[redirects]]
   from = "/assets/*"
   to = "https://kc-njs.netlify.app/assets/:splat"
   status = 200
   force = true
 
-# Serve static HTML files directly (bypass SPA)
-[[redirects]]
-  from = "/auth-redirect.html"
-  to = "/auth-redirect.html"
-  status = 200
-  force = true
-
-# SPA fallback - must be last, exclude static files
+# SPA fallback - must be last
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-  conditions = {path = "!/auth-redirect.html,!/auth/*,!/realms/*,!/assets/*"}
