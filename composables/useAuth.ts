@@ -31,7 +31,10 @@ export const useAuth = () => {
     params.delete('code')
 
     const newUrl = `${url.pathname}${params.toString() ? '?' + params.toString() : ''}`
-    window.history.replaceState({}, '', newUrl)
+
+    console.log('Redirecting to:', newUrl)
+
+    window.location.href = newUrl
   }
 
   // OIDC Configuration with integrated callback handling
@@ -117,34 +120,52 @@ export const useAuth = () => {
 
   // Check for existing user session
   const checkAuth = async () => {
-    if (!userManager) return
+    if (!userManager) {
+      initUserManager()
+    }
 
     try {
+      isLoading.value = true
       const existingUser = await userManager.getUser()
+      console.log('Checking existing user:', existingUser)
+      
       if (existingUser && !existingUser.expired) {
         user.value = existingUser
+        console.log('User authenticated:', existingUser.profile)
+      } else {
+        user.value = null
+        console.log('No valid user session found')
       }
     } catch (err) {
       console.error('Auth check error:', err)
+      user.value = null
+    } finally {
+      isLoading.value = false
     }
   }
 
   // Initialize on mount
-  onMounted(() => {
+  onMounted(async () => {
     initUserManager()
 
     // Check if this is a callback from authentication
     const urlParams = new URLSearchParams(window.location.search)
     if (urlParams.has('code') && urlParams.has('state')) {
-      // Let OIDC client handle the callback via onSigninCallback
-      userManager.signinRedirectCallback().then((callbackUser) => {
+      console.log('Processing OIDC callback')
+      try {
+        isLoading.value = true
+        const callbackUser = await userManager.signinRedirectCallback()
         user.value = callbackUser
-      }).catch((err) => {
+        console.log('Callback successful:', callbackUser.profile)
+      } catch (err) {
         error.value = err instanceof Error ? err.message : 'Callback handling failed'
         console.error('Callback error:', err)
-      })
+      } finally {
+        isLoading.value = false
+      }
     } else {
-      checkAuth()
+      // Check for existing session
+      await checkAuth()
     }
   })
 
