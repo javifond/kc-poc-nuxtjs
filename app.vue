@@ -37,26 +37,47 @@ onMounted(() => {
     }
   }
   
-  // Check every 100ms for kcContext changes (in case it's set asynchronously)
-  const interval = setInterval(checkKcContext, 100)
+  // Check continuously for kcContext changes (don't stop after 5 seconds)
+  const interval = setInterval(checkKcContext, 200)
   
-  // Clean up interval after 5 seconds (should be enough time for kcContext to be set)
-  setTimeout(() => {
-    clearInterval(interval)
-    console.log('Stopped checking for kcContext changes')
-  }, 5000)
+  // Listen for navigation events that might indicate kcContext changes
+  const handlePopState = () => {
+    console.log('Navigation detected, checking kcContext')
+    setTimeout(checkKcContext, 100) // Small delay to let kcContext be set
+  }
   
-  // Also check on window events that might indicate kcContext is ready
-  const handleWindowLoad = () => {
+  const handleHashChange = () => {
+    console.log('Hash change detected, checking kcContext')
+    setTimeout(checkKcContext, 100)
+  }
+  
+  const handleFocus = () => {
+    console.log('Window focus detected, checking kcContext')
     checkKcContext()
   }
   
-  window.addEventListener('load', handleWindowLoad)
+  // Listen for various events that might indicate page changes
+  window.addEventListener('popstate', handlePopState)
+  window.addEventListener('hashchange', handleHashChange)
+  window.addEventListener('focus', handleFocus)
+  window.addEventListener('load', checkKcContext)
+  
+  // Also listen for custom events from authentication
+  const handleAuthComplete = () => {
+    console.log('Auth complete event, checking kcContext')
+    setTimeout(checkKcContext, 100)
+  }
+  
+  window.addEventListener('auth-complete', handleAuthComplete)
   
   // Cleanup
   return () => {
     clearInterval(interval)
-    window.removeEventListener('load', handleWindowLoad)
+    window.removeEventListener('popstate', handlePopState)
+    window.removeEventListener('hashchange', handleHashChange)
+    window.removeEventListener('focus', handleFocus)
+    window.removeEventListener('load', checkKcContext)
+    window.removeEventListener('auth-complete', handleAuthComplete)
   }
 })
 </script>
