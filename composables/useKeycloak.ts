@@ -5,8 +5,31 @@ import { ref, computed, onMounted, onBeforeUnmount, readonly } from 'vue'
 const KEYCLOAK_REALM = 'demo1'
 const KEYCLOAK_CLIENT_ID = 'web-demo1'
 const TENANT_ID = 'demo1'
-const KEYCLOAK_BASE_URL = 'https://casino-citizen.eks-dev01.gigndvr.com/auth'
-const KEYCLOAK_FE_BASE_URL = 'https://kc-njs.netlify.app/'
+// Environment-aware configuration
+const getKeycloakConfig = () => {
+  if (typeof window !== 'undefined') {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    
+    if (isLocal) {
+      // Local development: direct to backend
+      return {
+        baseUrl: 'https://casino-citizen.eks-dev01.gigndvr.com/auth',
+        frontendUrl: `${window.location.origin}/`
+      }
+    } else {
+      // Production: use same origin for proxy
+      return {
+        baseUrl: `${window.location.origin}/auth`,
+        frontendUrl: `${window.location.origin}/`
+      }
+    }
+  }
+  // Fallback for SSR
+  return {
+    baseUrl: 'https://kc-njs.netlify.app/auth',
+    frontendUrl: 'https://kc-njs.netlify.app/'
+  }
+}
 
 const getRedirectUri = () => {
     const { protocol, hostname, port, pathname } = window.location
@@ -33,8 +56,9 @@ export const useKeycloak = () => {
             error.value = null
 
             if (!kc) {
+                const config = getKeycloakConfig()
                 kc = new Keycloak({
-                    url: KEYCLOAK_BASE_URL,
+                    url: config.baseUrl,
                     realm: KEYCLOAK_REALM,
                     clientId: KEYCLOAK_CLIENT_ID,
                 })
