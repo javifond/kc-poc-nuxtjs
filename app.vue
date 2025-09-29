@@ -14,101 +14,36 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watchEffect } from 'vue'
+import { onMounted, computed } from 'vue'
+import { useKeycloakMode } from './composables/useKeycloakMode'
+import { useRoute } from 'vue-router'
 
-// Detect if we're in Keycloak theme mode (client-side only)
-const kcContextExists = ref(false)
-const isKeycloakUrl = ref(false)
-const keycloakDebugMode = false // Set to true for local theme development
+// Use shared Keycloak mode state
+const { isKeycloakMode: sharedKeycloakMode } = useKeycloakMode()
+const route = useRoute()
 
-// Make it reactive by checking kcContext OR Keycloak URL patterns
-const isKeycloakMode = computed(() => kcContextExists.value || isKeycloakUrl.value || keycloakDebugMode)
+// Check if current route is a Keycloak auth route
+const isKeycloakRoute = computed(() => {
+  const path = route.path
+  return path.includes('/auth/realms/') || path.includes('/realms/')
+})
+
+// Combined Keycloak mode detection
+const isKeycloakMode = computed(() => {
+  return sharedKeycloakMode.value || isKeycloakRoute.value
+})
 
 onMounted(() => {
-  // Initial check
-  kcContextExists.value = (window as any).kcContext !== undefined
-  console.log('Initial kcContext check:', kcContextExists.value, (window as any).kcContext)
+  const keycloakDebugMode = false // Set to true for local theme development
   
-  // Check for Keycloak URL patterns that should trigger KeycloakMain
-  const checkKeycloakUrl = () => {
-    const currentPath = window.location.pathname
-    const currentSearch = window.location.search
-    
-    // Check if URL matches Keycloak auth patterns
-    const isAuthUrl = currentPath.includes('/auth/realms/') || 
-                     currentPath.includes('/realms/') ||
-                     currentSearch.includes('client_id=') ||
-                     currentSearch.includes('response_type=code')
-    
-    console.log('URL check - Path:', currentPath, 'Search:', currentSearch, 'IsKeycloakUrl:', isAuthUrl)
-    
-    if (isAuthUrl !== isKeycloakUrl.value) {
-      console.log('Keycloak URL mode changed:', isAuthUrl)
-      isKeycloakUrl.value = isAuthUrl
-    }
-  }
-
-  // Set up a watcher to detect when kcContext becomes available
-  const checkKcContext = () => {
-    const hasKcContext = (window as any).kcContext !== undefined
-    console.log('kcContext check:', hasKcContext)
-    if (hasKcContext !== kcContextExists.value) {
-      console.log('kcContext changed:', hasKcContext, (window as any).kcContext)
-      kcContextExists.value = hasKcContext
-    }
+  // Check for existing kcContext on mount
+  if ((window as any).kcContext !== undefined || keycloakDebugMode) {
+    sharedKeycloakMode.value = true
   }
   
-  // Combined check function
-  const checkKeycloakMode = () => {
-    checkKcContext()
-    checkKeycloakUrl()
-  }
-  
-  // Initial URL check
-  checkKeycloakUrl()
-  
-  // Check continuously for both kcContext and URL changes
-  const interval = setInterval(checkKeycloakMode, 200)
-  
-  // Listen for navigation events that might indicate kcContext or URL changes
-  const handlePopState = () => {
-    console.log('Navigation detected, checking Keycloak mode')
-    setTimeout(checkKeycloakMode, 100) // Small delay to let kcContext be set
-  }
-  
-  const handleHashChange = () => {
-    console.log('Hash change detected, checking Keycloak mode')
-    setTimeout(checkKeycloakMode, 100)
-  }
-  
-  const handleFocus = () => {
-    console.log('Window focus detected, checking Keycloak mode')
-    checkKeycloakMode()
-  }
-  
-  // Listen for various events that might indicate page changes
-  window.addEventListener('popstate', handlePopState)
-  window.addEventListener('hashchange', handleHashChange)
-  window.addEventListener('focus', handleFocus)
-  window.addEventListener('load', checkKeycloakMode)
-  
-  // Also listen for custom events from authentication
-  const handleAuthComplete = () => {
-    console.log('Auth complete event, checking Keycloak mode')
-    setTimeout(checkKeycloakMode, 100)
-  }
-  
-  window.addEventListener('auth-complete', handleAuthComplete)
-  
-  // Cleanup
-  return () => {
-    clearInterval(interval)
-    window.removeEventListener('popstate', handlePopState)
-    window.removeEventListener('hashchange', handleHashChange)
-    window.removeEventListener('focus', handleFocus)
-    window.removeEventListener('load', checkKcContext)
-    window.removeEventListener('auth-complete', handleAuthComplete)
-  }
+  console.log('App mounted - isKeycloakMode:', isKeycloakMode.value)
+  console.log('Current route:', route.path)
+  console.log('Is Keycloak route:', isKeycloakRoute.value)
 })
 </script>
 

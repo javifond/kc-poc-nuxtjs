@@ -1,5 +1,6 @@
 import { UserManager, User, WebStorageStateStore, OidcClient } from 'oidc-client-ts'
 import { ref, computed, onMounted, readonly } from 'vue'
+import { enableKeycloakMode, disableKeycloakMode } from './useKeycloakMode'
 
 const AUTH_ENDPOINT = 'https://casino-citizen.eks-dev01.gigndvr.com/auth/'
 const KEYCLOAK_REALM = 'demo1'
@@ -89,15 +90,23 @@ export const useAuth = () => {
       // Use OIDC client's proper createSigninRequest method
       const signinRequest = await oidcClient.createSigninRequest({})
       console.log('OIDC signin request created, redirecting to:', signinRequest.url)
+      window.location.href = signinRequest.url
 
-      // Use static HTML page to bypass Nuxt routing completely
-      // window.location.href = signinRequest.url
-      // window.history.replaceState({}, '', signinRequest.url)
+      // // IMPORTANT: Enable Keycloak mode BEFORE redirect to switch app to KeycloakMain
+      // console.log('Enabling Keycloak mode before redirect')
+      // enableKeycloakMode()
+
+      // // Small delay to let the UI update before redirect
+      // await new Promise(resolve => setTimeout(resolve, 100))
+
+      // Redirect to Keycloak
       window.location.href = signinRequest.url
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Login failed'
       console.error('Login error:', err)
       isLoading.value = false
+      // // Disable Keycloak mode on error
+      // disableKeycloakMode()
     }
   }
 
