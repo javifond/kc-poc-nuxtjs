@@ -168,6 +168,9 @@ export const useAuth = () => {
         const callbackUser = await userManager.signinRedirectCallback()
         user.value = callbackUser
         console.log('Callback successful:', callbackUser.profile)
+        
+        // Clean up URL parameters after successful authentication
+        onSigninCallback()
       } catch (err) {
         error.value = err instanceof Error ? err.message : 'Callback handling failed'
         console.error('Callback error:', err)
