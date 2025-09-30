@@ -89,14 +89,6 @@ export const useAuth = () => {
       // Use OIDC client's proper createSigninRequest method
       const signinRequest = await oidcClient.createSigninRequest({})
       console.log('OIDC signin request created, redirecting to:', signinRequest.url)
-      window.location.href = signinRequest.url
-
-      // // IMPORTANT: Enable Keycloak mode BEFORE redirect to switch app to KeycloakMain
-      // console.log('Enabling Keycloak mode before redirect')
-      // enableKeycloakMode()
-
-      // // Small delay to let the UI update before redirect
-      // await new Promise(resolve => setTimeout(resolve, 100))
 
       // Redirect to Keycloak
       window.location.href = signinRequest.url
